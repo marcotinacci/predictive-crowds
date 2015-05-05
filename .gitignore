@@ -23,3 +23,8 @@
 *.mtc1
 *.out
 *.synctex.gz
+
+
+yalmip/*
+
+documentation/.main.lb
