@@ -61,9 +61,9 @@ Uub = repmat(ones(N)-A,H,1);
 % constraints
 Constraints = [ ...
     %sumU == zeros(H*N,1) ... sum-zero params (10)
-    cX == cA*X0 + cU*ones(N,1) ... system dynamics (11)
-    cU <= Uub ... parameter upper bounds (12)
-    cU >= Ulb ... parameter lower bounds (12)
+    cX == cA*X0 + cU*ones(N,1) ... system dynamics
+    cU <= Uub ... parameter upper bounds
+    cU >= Ulb ... parameter lower bounds
     sum(X,2) == ones(H,1) ... distribution constraint on states
     X <= 1 ... probability upper bound
     X >= 0 ... probability lower bound

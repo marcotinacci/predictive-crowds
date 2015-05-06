@@ -61,7 +61,7 @@ where
 \end{itemize}
 \end{definition}
 
-We denote the number of states $|S|$ as $n$. A DTMC $\mathcal{D}$ describe an stochastic dynamic system whose dynamics can be summarized with a stochastic matrix $A \in [0,1]^{n \times n}$. We can estimate future states of the system by multiplying the current distribution, a Dirac distribution pointing to the current state, by $A$ many times, one for every step forward. If we denote the current distribution $x_0 \in [0,1]^n$ we can describe the canonical dynamic of a DTMC with the following equation:
+$\Delta(S)$ is used to denotes the set of all the discrete probability distributions with domain in $S$, and we denote the number of states $|S|$ as $n$. A DTMC $\mathcal{D}$ describe an stochastic dynamic system whose dynamics can be summarized with a stochastic matrix $A \in [0,1]^{n \times n}$. A matrix is stochastic when every column is a discrete probability distribution. We can estimate future states of the system by multiplying the current distribution, a Dirac distribution pointing to the current state, by $A$ many times, one for every step forward. If we denote the current distribution $x_0 \in [0,1]^n$ we can describe the canonical dynamic of a DTMC with the following equation:
 $$ x(k+1) = A \cdot x(k) $$
 Using this rule we are able to predict how the probability mass is going to spread after a number of discrete steps $T \in \mathbb{N}$, indeed this measure, also known as transient probability, can be computed in the following way
 $$ x(T) = A^T \cdot x_0 $$
@@ -89,7 +89,7 @@ a_{ij} \in [0,1],\ \forall i,j = 1,\dots,n
 Let $a_{ij}$ be an element of $A$, we can describe how the dynamics modify the state using the following system
 
 \begin{equation} \label{eq:system}
-	x_j(k+1) = \sum_{i=1}^n a_{ij} x_i(k), \ \forall j = 1,\dots,n
+	x_i(k+1) = \sum_{j=1}^n a_{ij} x_j(k), \ \forall i = 1,\dots,n
 \end{equation}
 
 where the state $x(k) \in \mathbb{R}^n$ with $k \geq 0$ represents a probability distribution over states, then it holds $\sum_{i=1}^n x_i(k) = 1$ and $x_i(k) \in [0,1]$ for any $i = 1,\dots,n$.
@@ -169,20 +169,29 @@ where $r_{ij}$ is an element of $R$. The MATLAB code used to run this experiment
 We consider a variation of the control applied in the first model from Section~\ref{subs:inputcontrol}, since every input parameter may affect more than one transition probability and, on the other side, every probability could be affected by more than one input parameter. This kind of formulation does not make clear what control input actually are in the concrete scenario, thus we reformulate the problem in order to have a one-to-one relation between control inputs and transition probabilities. We consider the same stochastic matrix $A$ and constraints (\ref{eq:stoc1}) and (\ref{eq:stoc2}) to represent the system dynamics, but we change the control parameters in order to act on the specific transition probabilities.
 
 \paragraph{Predictive control}
-We introduce the possibility to tune probabilities over the edges of the DTMC preserving the distribution constraints (\ref{eq:stoc1}) and (\ref{eq:stoc2}). Let $U \in \mathbb{R}^{n\times n}$ be the input matrix that will be used to tune the probabilities. In order to preserve the distribution constraints of $x(k)$ the following condition must hold on $U$
-\begin{equation} \label{eq:zerosum}
-	\sum_{j=1}^n u_{ij}(k) = 0
-\end{equation}
-where $u_{ij}(k)$ is an element of $U(k)$ and $k \geq 0$, for any $i = 1,\dots,n$.
+We introduce the possibility to tune probabilities over the edges of the DTMC preserving the distribution constraints (\ref{eq:stoc1}) and (\ref{eq:stoc2}). Let $U \in \mathbb{R}^{n\times n}$ be the input matrix that will be used to tune the probabilities.
+%In order to preserve the distribution constraints of $x(k)$ the following condition must hold on $U$
+%\begin{equation} \label{eq:zerosum}
+%	\sum_{j=1}^n u_{ij}(k) = 0
+%\end{equation}
+%where $u_{ij}(k)$ is an element of $U(k)$ and $k \geq 0$, for any $i = 1,\dots,n$.
 
 Now we can extend the system dynamics (\ref{eq:system}) with parameters given by $U$ in this way
 \begin{equation} \label{eq:system_extended}
-	x_j(k+1) = \sum_{i=1}^n a_{ij} x_i(k) + u_{ij}(k), \ \forall j = 1,\dots,n
+	x_i(k+1) = \sum_{j=1}^n a_{ij} x_j(k) + u_{ij}(k), \ \forall i = 1,\dots,n
 \end{equation}
-It is easy to see that, if (\ref{eq:zerosum}) holds and $x(k)$ is a valid distribution, $x(k+1)$ is a distribution as well.
+%It is easy to see that, if (\ref{eq:zerosum}) holds and $x(k)$ is a valid distribution, $x(k+1)$ is a distribution as well.
 
 \paragraph{Constraints}
-Since parameters $U(k)$ can increase or decrease transition probabilities $A$ out of the probability range $[0,1]$ we need to fix individual constraints to avoid that. Parameter $u_{ij}(k)$ is a local absolute modification of the probability mass flowing in a specific edge at time $k$, thus, starting from $a_{ij}x_j(k)+u_{ij}(k) \in [0,1]$ we can derive the following constraints
+After applying (\ref{eq:system_extended}) we need to preserve the distribution constraints, thus, for every $k$:
+\begin{equation}\label{eq:udistr1}
+	a_{ij}x_j(k) + u_{ij}(k) \in [0,1],\ \forall i,j = 1,\dots,n
+\end{equation}
+\begin{equation}\label{eq:udistr2}
+	\sum_{j=1}^n a_{ij}x_j(k) + u_{ij}(k) = 1,\ \forall i = 1,\dots,n
+\end{equation}
+
+Since parameters $U(k)$ can increase or decrease transition probabilities $A$ out of the probability range $[0,1]$ we need to fix individual constraints to avoid that. Parameter $u_{ij}(k)$ is a local absolute modification of the probability mass flowing in a specific edge at time $k$, thus, starting from \ref{eq:udistr1} we can derive the following constraints
 
 \begin{equation} \label{eq:constraints}
 	-1 \leq -a_{ij}x_j(k) \leq u_{ij}(k) \leq 1-a_{ij}x_{j}(k) \leq 1
@@ -201,8 +210,7 @@ Thus the problem can be summarize as the following optimization
 	\begin{array}{ll}
 		\underset{U}{\mbox{min}} & J(x(0),U) \\
 		\mbox{subject to} &
-		(\ref{eq:zerosum})(\ref{eq:system_extended})
-		(\ref{eq:constraints}) \\
+		(\ref{eq:system_extended})(\ref{eq:udistr2})(\ref{eq:constraints}) \\
 	\end{array}
 \end{equation}
 
@@ -257,11 +265,11 @@ We formulate the same problem a third time. In this case we want to tune the wei
 Again, we have the following straightforward constraints:
 \begin{itemize}
 	\item $A$ is a stochastic matrix,
-	\item $x(k)$ is a discrete probability distribution $\forall k=1\dots H$, where $H$ is the chosen horizon,
+	\item $x(k)$ is a discrete probability distribution $\forall\ k=1\dots H$, where $H$ is the chosen horizon,
 	\item $U$ is the input matrix that must be zero-sum per columns.
 \end{itemize}
 
-The performance index is again (\ref{eq:index_ext}). Using MATLAB and YALMIP we implemented the just described problem (\url{https://github.com/marcotinacci/predictive-crowds/blob/master/crowds_nlp_yalmip.m}). A nonlinear programming solver was used until the last iteration over 1000 cycles, but the results were quite accurate, as shown in Figure~\ref{fig:nlp-states} and Figure~\ref{fig:nlp-params}.
+The performance index is again (\ref{eq:index_ext}). Using MATLAB and YALMIP we implemented the just described problem, the script can be found in the github repository  \url{https://github.com/marcotinacci/predictive-crowds/blob/master/crowds_nlp_yalmip.m}. A nonlinear programming solver was used until the last iteration over 1000 cycles, but the results were quite accurate, as shown in Figure~\ref{fig:nlp-states} and Figure~\ref{fig:nlp-params}.
 
 \begin{figure}[htbp!]
 	\begin{center}
